@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>时薪计算器</title>
+<style>
+  :root,
+  [data-theme="dark"] {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-secondary: #8b949e;
+    --accent: #58a6ff;
+    --accent-green: #3fb950;
+    --accent-orange: #d2991d;
+    --input-bg: #0d1117;
+    --danger: #f85149;
+    --radius: 16px;
+  }
+
+  [data-theme="light"] {
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --border: #e0e0e6;
+    --text: #1d1d1f;
+    --text-secondary: #86868b;
+    --accent: #0071e3;
+    --accent-green: #34c759;
+    --accent-orange: #ff9f0a;
+    --input-bg: #f5f5f7;
+    --danger: #ff3b30;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Microsoft YaHei", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 440px;
+    padding: 24px;
+  }
+
+  /* ========== SETUP SCREEN ========== */
+  .setup-screen {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px 28px 28px;
+  }
+
+  .setup-screen h1 {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  .setup-screen .subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .form-group .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .form-group .input-wrapper:focus-within {
+    border-color: var(--accent);
+  }
+
+  .form-group input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 600;
+    padding: 14px 16px;
+    outline: none;
+    font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+    letter-spacing: -0.3px;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .form-group .unit {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    padding-right: 14px;
+    font-weight: 500;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  .select-wrapper select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 500;
+    padding: 14px 16px;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+
+  .select-wrapper {
+    position: relative;
+  }
+
+  .select-wrapper::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  .select-wrapper select option {
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+  }
+
+  .btn-primary:hover { background: #4090e0; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  /* theme toggle */
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, border-color 0.3s;
+    z-index: 50;
+  }
+
+  .theme-toggle:hover {
+    border-color: var(--accent);
+  }
+
+  .preview {
+    text-align: center;
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(63, 185, 80, 0.06);
+    border: 1px solid rgba(63, 185, 80, 0.15);
+    border-radius: 10px;
+  }
+
+  .preview .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .preview .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent-green);
+  }
+
+  .preview .value span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .preview .preview-detail {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  /* ========== DASHBOARD SCREEN ========== */
+  .dashboard {
+    display: none;
+  }
+
+  .dashboard.active { display: block; }
+  .setup-screen.hidden { display: none; }
+
+  .time-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .time-card .time-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .time-card .current-time {
+    font-size: 48px;
+    font-weight: 700;
+    font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+
+  .time-card .current-date {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .time-card .countdown {
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  .earnings-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .earnings-card .earnings-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .earnings-card .earnings-amount {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--accent-green);
+    font-family: "SF Mono", "Cascadia Code", "Menlo", monospace;
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+
+  .earnings-card .earnings-amount .decimal {
+    font-size: 36px;
+  }
+
+  .earnings-card .earnings-amount .yen {
+    font-size: 28px;
+    margin-right: 4px;
+    vertical-align: top;
+  }
+
+  .earnings-card .earnings-rate {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+  }
+
+  .earnings-card .progress-bar-wrap {
+    margin-top: 16px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .earnings-card .progress-bar-fill {
+    height: 100%;
+    background: var(--accent-green);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .stat-card .stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat-card .stat-value.small {
+    font-size: 18px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-secondary {
+    flex: 1;
+    padding: 12px;
+    background: var(--card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-secondary);
+    color: var(--text);
+  }
+
+  .btn-danger {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-danger:hover {
+    background: rgba(248, 81, 73, 0.1);
+    border-color: var(--danger);
+  }
+
+  .status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  .status-indicator.running { background: var(--accent-green); }
+  .status-indicator.paused { background: var(--accent-orange); animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .work-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 12px;
+  }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text);
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show { opacity: 1; }
+
+  /* mobile */
+  @media (max-width: 480px) {
+    .app { padding: 16px; }
+    .time-card .current-time { font-size: 38px; }
+    .earnings-card .earnings-amount { font-size: 44px; }
+    .earnings-card .earnings-amount .decimal { font-size: 28px; }
+    .earnings-card .earnings-amount .yen { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Theme toggle -->
+  <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+
+<div class="app">
+  <!-- ========== SETUP ========== -->
+  <div class="setup-screen" id="setupScreen">
+    <h1>💸 时薪计算器</h1>
+    <p class="subtitle">设置你的薪资信息，开始实时追踪</p>
+
+    <div class="form-group">
+      <label>月薪（税前）</label>
+      <div class="input-wrapper">
+        <input type="number" id="monthlySalary" placeholder="例如 15000" step="100" min="0">
+        <span class="unit">元/月</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>工作制度</label>
+        <div class="input-wrapper select-wrapper">
+          <select id="workMode">
+            <option value="double">双休（周末双休）</option>
+            <option value="alternating">大小周（单双休交替）</option>
+            <option value="single">单休（每周休一天）</option>
+            <option value="monthEndSingle">月末单休（月末休周日）</option>
+            <option value="custom">自定义天数</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>年终奖</label>
+        <div class="input-wrapper select-wrapper">
+          <select id="annualMonths">
+            <option value="12">12 薪（无年终奖）</option>
+            <option value="13">13 薪（1个月年终）</option>
+            <option value="14">14 薪（2个月年终）</option>
+            <option value="15">15 薪（3个月年终）</option>
+            <option value="16">16 薪（4个月年终）</option>
+            <option value="18">18 薪（6个月年终）</option>
+            <option value="20">20 薪（8个月年终）</option>
+            <option value="custom">自定义…</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" id="customAnnualGroup" style="display:none;">
+      <label>自定义年薪月数</label>
+      <div class="input-wrapper">
+        <input type="number" id="customAnnualMonths" placeholder="例如 16" value="13" step="0.5" min="12" max="100">
+        <span class="unit">薪</span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>每月工作天数</label>
+        <div class="input-wrapper">
+          <input type="number" id="workDays" placeholder="22" value="22" step="0.5" min="1" max="31">
+          <span class="unit">天</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>每天工作小时</label>
+        <div class="input-wrapper">
+          <input type="number" id="workHours" placeholder="8" value="8" step="0.5" min="1" max="24">
+          <span class="unit">小时</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>上班时间</label>
+      <div class="input-wrapper">
+        <input type="time" id="startTime" value="09:00">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>午休开始</label>
+        <div class="input-wrapper">
+          <input type="time" id="lunchStart" value="12:00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>午休结束</label>
+        <div class="input-wrapper">
+          <input type="time" id="lunchEnd" value="13:00">
+        </div>
+      </div>
+    </div>
+
+    <div class="preview" id="preview" style="display:none;">
+      <div class="label">预计时薪</div>
+      <div class="value" id="previewHourly">-- <span>元/小时</span></div>
+      <div class="preview-detail" id="previewDetail"></div>
+    </div>
+
+    <button class="btn-primary" id="btnStart">开始计算</button>
+  </div>
+
+  <!-- ========== DASHBOARD ========== -->
+  <div class="dashboard" id="dashboard">
+    <div class="time-card">
+      <div class="time-label">当前时间</div>
+      <div class="current-time" id="currentTime">--:--:--</div>
+      <div class="current-date" id="currentDate">----年--月--日</div>
+      <div class="countdown" id="countdown"></div>
+    </div>
+
+    <div class="earnings-card">
+      <div class="earnings-label">💰 今天已赚</div>
+      <div class="earnings-amount">
+        <span class="yen">¥</span><span id="earningsInt">0</span><span class="decimal" id="earningsDec">.00</span>
+      </div>
+      <div class="earnings-rate" id="earningsRate">时薪 ¥0.00</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+      </div>
+      <div class="work-status">
+        <span class="status-indicator running" id="statusDot"></span>
+        <span id="statusText">工作中</span>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">今日目标</div>
+        <div class="stat-value" id="dailyGoal">¥0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">完成进度</div>
+        <div class="stat-value small" id="completionPct">0%</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">本月累计</div>
+        <div class="stat-value small" id="monthlyTotal">¥0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">本月已工作</div>
+        <div class="stat-value small" id="monthlyDays">0 天</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" id="btnPause">⏯️ 暂停</button>
+      <button class="btn-danger" id="btnReset">🔄 重新设置</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function () {
+  // ── DOM refs ──
+  const $setup     = document.getElementById('setupScreen');
+  const $dashboard = document.getElementById('dashboard');
+
+  const $monthlySalary     = document.getElementById('monthlySalary');
+  const $workMode          = document.getElementById('workMode');
+  const $annualMonths      = document.getElementById('annualMonths');
+  const $customAnnualGroup = document.getElementById('customAnnualGroup');
+  const $customAnnualMonths = document.getElementById('customAnnualMonths');
+  const $workDays          = document.getElementById('workDays');
+  const $workHours         = document.getElementById('workHours');
+  const $startTime         = document.getElementById('startTime');
+  const $lunchStart        = document.getElementById('lunchStart');
+  const $lunchEnd          = document.getElementById('lunchEnd');
+  const $preview       = document.getElementById('preview');
+  const $previewHourly   = document.getElementById('previewHourly');
+  const $previewDetail   = document.getElementById('previewDetail');
+  const $btnStart        = document.getElementById('btnStart');
+
+  const $currentTime   = document.getElementById('currentTime');
+  const $currentDate   = document.getElementById('currentDate');
+  const $countdown     = document.getElementById('countdown');
+  const $earningsInt   = document.getElementById('earningsInt');
+  const $earningsDec   = document.getElementById('earningsDec');
+  const $earningsRate  = document.getElementById('earningsRate');
+  const $progressBar   = document.getElementById('progressBar');
+  const $dailyGoal     = document.getElementById('dailyGoal');
+  const $completionPct = document.getElementById('completionPct');
+  const $monthlyTotal  = document.getElementById('monthlyTotal');
+  const $monthlyDays   = document.getElementById('monthlyDays');
+  const $statusDot     = document.getElementById('statusDot');
+  const $statusText    = document.getElementById('statusText');
+  const $btnPause      = document.getElementById('btnPause');
+  const $btnReset      = document.getElementById('btnReset');
+  const $toast         = document.getElementById('toast');
+  const $themeToggle   = document.getElementById('themeToggle');
+
+  // ── Theme ──
+  const THEME_KEY = 'salary_calc_theme';
+
+  function getTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+    // 跟随系统偏好
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    $themeToggle.textContent = theme === 'light' ? '☀️' : '🌙';
+    localStorage.setItem(THEME_KEY, theme);
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  }
+  let config = {
+    monthlySalary: 0,
+    annualMonths: 12,
+    workMode: 'double',
+    workDays: 22,
+    workHours: 8,
+    startTime: '09:00',
+    lunchStart: '12:00',
+    lunchEnd: '13:00',
+  };
+
+  function getAnnualMonths() {
+    const mode = $annualMonths.value;
+    if (mode === 'custom') {
+      return parseFloat($customAnnualMonths.value) || 12;
+    }
+    return parseFloat(mode) || 12;
+  }
+
+  // ── Work mode → monthly days ──
+  const WORK_MODE_DAYS = {
+    double:         21.75,  // 双休: 5天/周 × 365/12/7
+    alternating:    24,     // 大小周: 5.5天/周平均
+    single:         26,     // 单休: 6天/周
+    monthEndSingle: 25,     // 月末单休: 6天/周 - 1天/月
+  };
+
+  function getWorkDaysFromMode(mode) {
+    return WORK_MODE_DAYS[mode] || config.workDays;
+  }
+
+  function applyAnnualMode() {
+    if ($annualMonths.value === 'custom') {
+      $customAnnualGroup.style.display = 'block';
+    } else {
+      $customAnnualGroup.style.display = 'none';
+    }
+    updatePreview();
+  }
+
+  function applyWorkMode() {
+    const mode = $workMode.value;
+    if (mode === 'custom') {
+      $workDays.disabled = false;
+      $workDays.style.opacity = '1';
+    } else {
+      const days = WORK_MODE_DAYS[mode];
+      $workDays.value = days;
+      $workDays.disabled = true;
+      $workDays.style.opacity = '0.5';
+    }
+    updatePreview();
+  }
+
+  let hourlyRate = 0;       // 时薪
+  let secondRate = 0;       // 每秒收入
+  let dailyTarget = 0;      // 每日目标
+  let paused = false;
+  let pauseAccumMs = 0;     // 暂停期间累计的毫秒
+  let pauseStart = null;    // 暂停开始时刻
+  let timerId = null;
+
+  // ── Persist ──
+  const STORAGE_KEY = 'salary_calc_config';
+
+  function saveConfig() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  }
+
+  function loadConfig() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (saved.monthlySalary > 0) {
+          config = saved;
+          return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  function clearConfig() {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  function calcRates() {
+    const wd = config.workMode === 'custom' ? config.workDays : WORK_MODE_DAYS[config.workMode];
+    const monthlyHours = wd * config.workHours;
+    if (monthlyHours <= 0) return;
+    // 时薪 = (月薪 × 年薪月数 / 12) / 月工作小时
+    const effectiveMonthly = config.monthlySalary * config.annualMonths / 12;
+    hourlyRate = effectiveMonthly / monthlyHours;
+    secondRate = hourlyRate / 3600;
+    dailyTarget = hourlyRate * config.workHours;
+  }
+
+  // ── Time helpers ──
+  function parseTime(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return { h, m };
+  }
+
+  function getTodayStart() {
+    const { h, m } = parseTime(config.startTime);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+
+  function getTodayEnd() {
+    const { h, m } = parseTime(config.startTime);
+    const d = new Date();
+    d.setHours(h + config.workHours, m, 0, 0);
+    return d;
+  }
+
+  function getLunchStart() {
+    const { h, m } = parseTime(config.lunchStart);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+
+  function getLunchEnd() {
+    const { h, m } = parseTime(config.lunchEnd);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+  }
+
+  // 实际工作秒数：扣除午休时间
+  function getWorkedSeconds(now) {
+    const todayStart = getTodayStart();
+    const todayEnd = getTodayEnd();
+    const lunchStart = getLunchStart();
+    const lunchEnd = getLunchEnd();
+
+    if (now <= todayStart) return 0;
+
+    let effectiveStart = todayStart;
+    let effectiveEnd = now > todayEnd ? todayEnd : now;
+
+    // 如果午休时间有效（开始<结束），扣除午休
+    if (lunchStart < lunchEnd) {
+      // 只在午休区间与工作区间有交集时扣除
+      if (effectiveEnd > lunchStart) {
+        const overlapStart = effectiveStart > lunchStart ? effectiveStart : lunchStart;
+        const overlapEnd = effectiveEnd < lunchEnd ? effectiveEnd : lunchEnd;
+        if (overlapEnd > overlapStart) {
+          const rawMs = effectiveEnd - effectiveStart;
+          const lunchMs = overlapEnd - overlapStart;
+          return Math.max(0, (rawMs - lunchMs) / 1000);
+        }
+      }
+    }
+
+    return (effectiveEnd - effectiveStart) / 1000;
+  }
+
+  // 月度累积存储
+  const MONTHLY_KEY = 'salary_calc_monthly';
+
+  function loadMonthly() {
+    try {
+      const raw = localStorage.getItem(MONTHLY_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+    return {};
+  }
+
+  function saveMonthly(data) {
+    localStorage.setItem(MONTHLY_KEY, JSON.stringify(data));
+  }
+
+  function getMonthKey() {
+    const now = new Date();
+    return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  }
+
+  function getTodayKey() {
+    const now = new Date();
+    return now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0');
+  }
+
+  function recordEndOfDay() {
+    const todayKey = getTodayKey();
+    const monthKey = getMonthKey();
+    const monthly = loadMonthly();
+
+    // 如果今天已经记录过，不重复记录
+    if (monthly[todayKey]) return;
+
+    const now = new Date();
+    const secs = getWorkedSeconds(now);
+    const maxSecs = config.workHours * 3600;
+    // 只能记录到下班时间
+    const cappedSecs = Math.min(secs, maxSecs);
+    const earned = cappedSecs * secondRate;
+
+    monthly[todayKey] = {
+      monthKey: monthKey,
+      seconds: cappedSecs,
+      earned: earned,
+      date: todayKey,
+    };
+
+    saveMonthly(monthly);
+  }
+
+  function getMonthlyStats() {
+    const monthKey = getMonthKey();
+    const monthly = loadMonthly();
+    let totalEarned = 0;
+    let daysWorked = 0;
+    for (const key of Object.keys(monthly)) {
+      const entry = monthly[key];
+      if (entry.monthKey === monthKey) {
+        totalEarned += entry.earned || 0;
+        daysWorked++;
+      }
+    }
+    return { totalEarned, daysWorked };
+  }
+
+  function formatMoney(amount) {
+    const intPart = Math.floor(amount);
+    const decPart = Math.floor((amount - intPart) * 100);
+    return {
+      int: intPart.toLocaleString('zh-CN'),
+      dec: '.' + String(decPart).padStart(2, '0'),
+    };
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function formatTime(date) {
+    return pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
+  }
+
+  function formatDate(date) {
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    return (
+      date.getFullYear() + '年' +
+      (date.getMonth() + 1) + '月' +
+      date.getDate() + '日 星期' +
+      weekdays[date.getDay()]
+    );
+  }
+
+  // ── Toast ──
+  let toastTimer = null;
+  function showToast(msg) {
+    $toast.textContent = msg;
+    $toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $toast.classList.remove('show'), 2000);
+  }
+
+  // ── Update loop ──
+  function tick() {
+    const now = new Date();
+    $currentTime.textContent = formatTime(now);
+    $currentDate.textContent = formatDate(now);
+
+    const todayStart = getTodayStart();
+    const todayEnd = getTodayEnd();
+    const lunchStart = getLunchStart();
+    const lunchEnd = getLunchEnd();
+
+    let earnedSecs = 0;
+    let statusRunning = true;
+    let countdownText = '';
+
+    if (now < todayStart) {
+      // 还没到上班时间
+      earnedSecs = 0;
+      statusRunning = false;
+      $statusText.textContent = '等待上班';
+      const diff = todayStart - now;
+      countdownText = '距离上班 ' + formatDuration(diff);
+    } else if (paused) {
+      earnedSecs = pauseAccumMs / 1000;
+      statusRunning = false;
+      $statusText.textContent = '已暂停';
+    } else if (now >= todayEnd) {
+      earnedSecs = getWorkedSeconds(todayEnd);
+      statusRunning = false;
+      $statusText.textContent = '已下班';
+      // 记录今天收入到月度
+      recordEndOfDay();
+    } else {
+      // 工作中 —— 判断当前处于哪个阶段
+      earnedSecs = getWorkedSeconds(now);
+      $statusText.textContent = '工作中';
+
+      if (now < lunchStart) {
+        // 上午工作时段
+        const diff = lunchStart - now;
+        countdownText = '距离午休 ' + formatDuration(diff);
+      } else if (now >= lunchStart && now < lunchEnd) {
+        // 午休中
+        $statusText.textContent = '午休中';
+        statusRunning = false;
+        const diff = lunchEnd - now;
+        countdownText = '午休剩余 ' + formatDuration(diff);
+      } else {
+        // 下午工作时段
+        const diff = todayEnd - now;
+        countdownText = '距离下班 ' + formatDuration(diff);
+      }
+    }
+
+    $countdown.textContent = countdownText;
+
+    const earned = earnedSecs * secondRate;
+    const money = formatMoney(earned);
+    $earningsInt.textContent = money.int;
+    $earningsDec.textContent = money.dec;
+    $earningsRate.textContent = '时薪 ¥' + hourlyRate.toFixed(2);
+
+    // Progress bar (based on actual work hours minus lunch)
+    const lunchSecs = (lunchStart < lunchEnd) ? (lunchEnd - lunchStart) / 1000 : 0;
+    const maxSecs = config.workHours * 3600 - lunchSecs;
+    const progressPct = Math.min(100, maxSecs > 0 ? (earnedSecs / maxSecs) * 100 : 0);
+    $progressBar.style.width = progressPct.toFixed(1) + '%';
+
+    // Daily goal display
+    $dailyGoal.textContent = '¥' + formatMoney(dailyTarget).int;
+    $completionPct.textContent = Math.min(100, Math.floor(progressPct)) + '%';
+
+    // Monthly stats
+    const monthly = getMonthlyStats();
+    $monthlyTotal.textContent = '¥' + formatMoney(monthly.totalEarned).int;
+    $monthlyDays.textContent = monthly.daysWorked + ' 天';
+
+    // Status dot
+    $statusDot.className = 'status-indicator ' + (statusRunning ? 'running' : 'paused');
+  }
+
+  function formatDuration(ms) {
+    if (ms <= 0) return '--';
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return h + '时' + m + '分' + s + '秒';
+    if (m > 0) return m + '分' + s + '秒';
+    return s + '秒';
+  }
+
+  function startTicking() {
+    stopTicking();
+    tick();
+    timerId = setInterval(tick, 1000);
+  }
+
+  function stopTicking() {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+  }
+
+  // ── Toggle pause ──
+  function togglePause() {
+    if (paused) {
+      // 恢复
+      const pausedDuration = Date.now() - pauseStart;
+      pauseAccumMs += pausedDuration;
+      pauseStart = null;
+      paused = false;
+      $btnPause.textContent = '⏯️ 暂停';
+      showToast('已恢复');
+    } else {
+      // 暂停
+      const now = new Date();
+      const todayStart = getTodayStart();
+      if (now < todayStart) return;
+      const elapsedMs = now - todayStart;
+      pauseAccumMs = Math.min(elapsedMs, config.workHours * 3600 * 1000);
+      pauseStart = Date.now();
+      paused = true;
+      $btnPause.textContent = '▶️ 继续';
+      showToast('已暂停');
+    }
+  }
+
+  // ── Switch to dashboard ──
+  function showDashboard() {
+    calcRates();
+    $setup.classList.add('hidden');
+    $dashboard.classList.add('active');
+    pauseAccumMs = 0;
+    pauseStart = null;
+    paused = false;
+    $btnPause.textContent = '⏯️ 暂停';
+    startTicking();
+  }
+
+  function showSetup() {
+    stopTicking();
+    $dashboard.classList.remove('active');
+    $setup.classList.remove('hidden');
+    // Pre-fill from config if exists
+    if (config.monthlySalary > 0) {
+      $monthlySalary.value = config.monthlySalary;
+      $workMode.value = config.workMode || 'double';
+      const am = config.annualMonths || 12;
+      if ([12,13,14,15,16,18,20].includes(am)) {
+        $annualMonths.value = String(am);
+        $customAnnualMonths.value = am;
+      } else {
+        $annualMonths.value = 'custom';
+        $customAnnualMonths.value = am;
+      }
+      $workDays.value = config.workDays;
+      $workHours.value = config.workHours;
+      $startTime.value = config.startTime;
+      $lunchStart.value = config.lunchStart || '12:00';
+      $lunchEnd.value = config.lunchEnd || '13:00';
+      applyWorkMode();
+      applyAnnualMode();
+      updatePreview();
+    }
+  }
+
+  // ── Preview ──
+  function updatePreview() {
+    const ms = parseFloat($monthlySalary.value) || 0;
+    const am = getAnnualMonths();
+    const mode = $workMode.value;
+    const wd = mode === 'custom' ? (parseFloat($workDays.value) || 0) : (WORK_MODE_DAYS[mode] || 0);
+    const wh = parseFloat($workHours.value) || 8;
+    if (ms > 0 && wd > 0 && wh > 0) {
+      const effectiveMonthly = ms * am / 12;
+      const hr = effectiveMonthly / (wd * wh);
+      $previewHourly.innerHTML = hr.toFixed(2) + ' <span>元/小时</span>';
+      const annualSalary = ms * am;
+      $previewDetail.innerHTML =
+        '年薪 ' + annualSalary.toLocaleString('zh-CN') + ' 元（' +
+        am + ' 薪 × ¥' + ms.toLocaleString('zh-CN') + '）';
+      $preview.style.display = 'block';
+    } else {
+      $preview.style.display = 'none';
+    }
+  }
+
+  // ── Event listeners ──
+  $monthlySalary.addEventListener('input', updatePreview);
+  $workMode.addEventListener('change', applyWorkMode);
+  $annualMonths.addEventListener('change', applyAnnualMode);
+  $customAnnualMonths.addEventListener('input', updatePreview);
+  $workDays.addEventListener('input', updatePreview);
+  $workHours.addEventListener('input', updatePreview);
+
+  $btnStart.addEventListener('click', () => {
+    const ms = parseFloat($monthlySalary.value) || 0;
+    const am = getAnnualMonths();
+    const mode = $workMode.value;
+    const wd = mode === 'custom' ? (parseFloat($workDays.value) || 0) : (WORK_MODE_DAYS[mode] || 0);
+    const wh = parseFloat($workHours.value) || 8;
+    const st = $startTime.value || '09:00';
+    const ls = $lunchStart.value || '12:00';
+    const le = $lunchEnd.value || '13:00';
+
+    if (ms <= 0) { showToast('请输入月薪'); return; }
+    if (am < 12) { showToast('年薪月数不能小于 12'); return; }
+    if (wd <= 0) { showToast('请输入工作天数'); return; }
+    if (wh <= 0) { showToast('请输入工作小时'); return; }
+
+    config.monthlySalary = ms;
+    config.annualMonths = am;
+    config.workMode = mode;
+    config.workDays = wd;
+    config.workHours = wh;
+    config.startTime = st;
+    config.lunchStart = ls;
+    config.lunchEnd = le;
+    saveConfig();
+    showDashboard();
+  });
+
+  $btnPause.addEventListener('click', togglePause);
+  $btnReset.addEventListener('click', () => {
+    if (confirm('确定要重新设置吗？当前进度将丢失。')) {
+      clearConfig();
+      showSetup();
+    }
+  });
+
+  $themeToggle.addEventListener('click', toggleTheme);
+
+  // Apply theme on load
+  applyTheme(getTheme());
+
+  // ── Init ──
+  if (loadConfig()) {
+    $monthlySalary.value = config.monthlySalary;
+    $workMode.value = config.workMode || 'double';
+    const am = config.annualMonths || 12;
+    if ([12,13,14,15,16,18,20].includes(am)) {
+      $annualMonths.value = String(am);
+      $customAnnualMonths.value = am;
+    } else {
+      $annualMonths.value = 'custom';
+      $customAnnualMonths.value = am;
+    }
+    $workDays.value = config.workDays;
+    $workHours.value = config.workHours;
+    $startTime.value = config.startTime;
+    $lunchStart.value = config.lunchStart || '12:00';
+    $lunchEnd.value = config.lunchEnd || '13:00';
+    applyWorkMode();
+    applyAnnualMode();
+    updatePreview();
+    showDashboard();
+  } else {
+    applyWorkMode();
+    applyAnnualMode();
+    updatePreview();
+  }
+})();
+</script>
+
+</body>
+</html>
