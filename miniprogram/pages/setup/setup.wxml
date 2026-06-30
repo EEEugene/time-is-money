@@ -1,0 +1,95 @@
+<view class="container setup-screen {{theme === 'light' ? 'theme-light' : ''}}">
+  <h1>💸 时薪计算器</h1>
+  <view class="subtitle">设置你的薪资信息，开始实时追踪</view>
+
+  <!-- 月薪 -->
+  <view class="form-group">
+    <view class="label">月薪（税前）</view>
+    <view class="input-wrapper">
+      <input type="digit" placeholder="例如 15000" value="{{monthlySalary}}" bindinput="onInput" data-field="monthlySalary" />
+      <text class="unit">元/月</text>
+    </view>
+  </view>
+
+  <!-- 工作制度 + 年终奖 -->
+  <view class="form-row">
+    <view class="form-group">
+      <view class="label">工作制度</view>
+      <view class="picker-wrapper" bindtap="onWorkModePicker">
+        <text class="picker-value">{{workModeLabel}}</text>
+        <text class="picker-arrow">▾</text>
+      </view>
+    </view>
+    <view class="form-group">
+      <view class="label">年终奖</view>
+      <view class="picker-wrapper" bindtap="onAnnualPicker">
+        <text class="picker-value">{{annualLabel}}</text>
+        <text class="picker-arrow">▾</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 自定义年薪月数 -->
+  <view class="form-group" wx:if="{{showCustomAnnual}}">
+    <view class="label">自定义年薪月数</view>
+    <view class="input-wrapper">
+      <input type="digit" placeholder="例如 16" value="{{customAnnualMonths}}" bindinput="onInput" data-field="customAnnualMonths" />
+      <text class="unit">薪</text>
+    </view>
+  </view>
+
+  <!-- 工作天数 + 工作小时 -->
+  <view class="form-row">
+    <view class="form-group">
+      <view class="label">每月工作天数</view>
+      <view class="input-wrapper">
+        <input type="digit" placeholder="22" value="{{workDays}}" bindinput="onInput" data-field="workDays" disabled="{{workDaysDisabled}}" style="opacity: {{workDaysDisabled ? '0.5' : '1'}}" />
+        <text class="unit">天</text>
+      </view>
+    </view>
+    <view class="form-group">
+      <view class="label">每天工作小时</view>
+      <view class="input-wrapper">
+        <input type="digit" placeholder="8" value="{{workHours}}" bindinput="onInput" data-field="workHours" />
+        <text class="unit">小时</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 上班时间 -->
+  <view class="form-group">
+    <view class="label">上班时间</view>
+    <view class="picker-wrapper" bindtap="onTimePicker" data-field="startTime" data-value="{{startTime}}">
+      <text class="picker-value">{{startTime}}</text>
+      <text class="picker-arrow">🕐</text>
+    </view>
+  </view>
+
+  <!-- 午休 -->
+  <view class="form-row">
+    <view class="form-group">
+      <view class="label">午休开始</view>
+      <view class="picker-wrapper" bindtap="onTimePicker" data-field="lunchStart" data-value="{{lunchStart}}">
+        <text class="picker-value">{{lunchStart}}</text>
+        <text class="picker-arrow">🕐</text>
+      </view>
+    </view>
+    <view class="form-group">
+      <view class="label">午休结束</view>
+      <view class="picker-wrapper" bindtap="onTimePicker" data-field="lunchEnd" data-value="{{lunchEnd}}">
+        <text class="picker-value">{{lunchEnd}}</text>
+        <text class="picker-arrow">🕐</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 预览 -->
+  <view class="preview" wx:if="{{showPreview}}">
+    <view class="preview-label">预计时薪</view>
+    <view class="preview-value">{{previewHourly}} <text style="font-size:13px;font-weight:500;">元/小时</text></view>
+    <view class="preview-detail">{{previewDetail}}</view>
+  </view>
+
+  <!-- 开始计算 -->
+  <button class="btn-primary" bindtap="onStart">开始计算</button>
+</view>

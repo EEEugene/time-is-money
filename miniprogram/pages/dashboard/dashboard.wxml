@@ -1,0 +1,46 @@
+<view class="container {{theme === 'light' ? 'theme-light' : ''}}">
+  <!-- 主题切换 -->
+  <view class="theme-toggle" bindtap="onToggleTheme">{{theme === 'dark' ? '🌙' : '☀️'}}</view>
+
+  <!-- 时间卡片 -->
+  <view class="card time-card">
+    <view class="time-label">当前时间</view>
+    <view class="current-time">{{currentTime}}</view>
+    <view class="current-date">{{currentDate}}</view>
+    <view class="countdown">{{countdown}}</view>
+  </view>
+
+  <!-- 收入卡片 -->
+  <view class="card earnings-card">
+    <view class="earnings-label">💰 今天已赚</view>
+    <view class="earnings-amount">
+      <text class="yen">¥</text>{{earnedInt}}<text class="decimal">{{earnedDec}}</text>
+    </view>
+    <view class="earnings-rate">时薪 ¥{{hourlyRateText}}</view>
+    <view class="progress-bar-wrap">
+      <view class="progress-bar-fill" style="width: {{progressPct}}%;"></view>
+    </view>
+    <view class="work-status">
+      <view class="status-dot {{statusRunning ? 'running' : 'paused'}}"></view>
+      <text>{{statusText}}</text>
+    </view>
+  </view>
+
+  <!-- 今日统计 -->
+  <view class="stats-row">
+    <view class="card stat-card">
+      <view class="stat-label">今日目标</view>
+      <view class="stat-value">{{dailyGoalText}}</view>
+    </view>
+    <view class="card stat-card">
+      <view class="stat-label">完成进度</view>
+      <view class="stat-value small">{{completionPct}}%</view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="btn-row">
+    <view class="btn-secondary" bindtap="onTogglePause">{{paused ? '▶️ 继续' : '⏯️ 暂停'}}</view>
+    <view class="btn-danger" bindtap="onReset">🔄 重新设置</view>
+  </view>
+</view>

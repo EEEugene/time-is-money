@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "pages/setup/setup",
+    "pages/dashboard/dashboard"
+  ],
+  "window": {
+    "navigationBarTitleText": "时薪计算器",
+    "navigationBarBackgroundColor": "#161b22",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0d1117"
+  },
+  "sitemapLocation": "sitemap.json"
+}
